@@ -22,23 +22,36 @@
         <a class="item" href="{{url_for_field('status', 'unreported')}}">Unreported</a>
       </div>
     </div>
-    {% if current_page > 1 %}
+  </div>
+  <div class="four wide column">
     <div class="ui fluid icon large basic button">
-      <a href="{{prev_page}}">Back</a>
+      <a href="{{first_page_url}}">First</a>
+    </div>
+
+    {% if current_page > 0 %}
+    <div class="ui fluid icon large basic button">
+      <a href="{{prev_page_url}}">Back</a>
     </div>
     {% endif %}
 
     {% if current_page+1 <= pages %}
     <div class="ui fluid icon large basic button">
-      <a href="{{next_page}}">Next</a>
+      <a href="{{next_page_url}}">Next</a>
     </div>
     {% endif %}
+
+    <div class="ui fluid icon large basic button">
+      <a href="{{last_page_url}}">Last</a>
+    </div>
+  </div>
   </div>
   <div>
     <ul>
       <li>Current page / total pages: {{current_page}} / {{pages}}</li>
-      <li>Next page URL: {{next_page}}</li>
-      <li>Previous page URL: {{prev_page}}</li>
+      <li>First page URL: {{first_page_url}}</li>
+      <li>Next page URL: {{next_page_url}}</li>
+      <li>Previous page URL: {{prev_page_url}}</li>
+      <li>Last page URL: {{last_page_url}}</li>
       <li>
         <span>
           Current query:

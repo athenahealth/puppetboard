@@ -1,13 +1,14 @@
+import gevent.monkey
+
+def gevent_monkeypatch():
+    gevent.monkey.patch_all()
+
 import json
 import os
 import secrets
 import tempfile
 import base64
 import binascii
-import gevent.monkey
-
-def gevent_monkeypatch():
-    gevent.monkey.patch_all()
 
 def cert_to_file(cert_file_or_string):
     """
@@ -64,8 +65,8 @@ PUPPETDB_SSL_VERIFY = coerce_bool(
 PUPPETDB_KEY = cert_to_file(os.getenv('PUPPETDB_KEY', None))
 PUPPETDB_CERT = cert_to_file(os.getenv('PUPPETDB_CERT', None))
 PUPPETDB_PROTO = os.getenv('PUPPETDB_PROTO', None)
-PUPPETDB_TIMEOUT = int(os.getenv('PUPPETDB_TIMEOUT', '20'))
-DEFAULT_ENVIRONMENT = os.getenv('DEFAULT_ENVIRONMENT', 'production')
+PUPPETDB_TIMEOUT = int(os.getenv('PUPPETDB_TIMEOUT', '120'))
+DEFAULT_ENVIRONMENT = os.getenv('DEFAULT_ENVIRONMENT', 'nop4dev')
 # this empty string has to be changed, we validate it with check_secret_key()
 SECRET_KEY = os.getenv('SECRET_KEY', '')  # nosec
 UNRESPONSIVE_HOURS = int(os.getenv('UNRESPONSIVE_HOURS', '2'))

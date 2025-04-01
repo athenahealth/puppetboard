@@ -1,4 +1,6 @@
 import ast
+from datetime import datetime, timedelta, timezone
+from itertools import batched
 import json
 import logging
 import sys
@@ -160,3 +162,44 @@ def is_a_test():
     )
     running_in_intellij = any("_jb_pytest_runner.py" in arg for arg in sys.argv)
     return running_in_shell or running_in_intellij
+
+def query_node_count(env, client):
+    nodes_n_qry = {
+        'query': f'nodes[count()] {{ report_environment = "{env}" }}'
+    }
+    nodes_n_json = client._make_request(
+        url=f'{client.base_url}/pdb/query/v4',
+        payload=nodes_n_qry,
+        request_method='GET',
+    )
+    [nodes_n] = nodes_n_json if nodes_n_json is not None else [{'count': 0}]
+    return nodes_n['count']
+
+def calc_batches(node_count, app):
+    offset = int(app.config['NODE_QRY_OFFSET'])
+    # itertools.batched divvies up total node count into even batches
+    return len(list(batched(range(node_count), offset))) - 1
+
+def compose_pql_env(env):
+    if env != '*':
+        return f'catalog_environment = "{env}"'
+    return ''
+
+def compose_pql_status(status, app):
+    if status == 'unreported':
+        unreported = datetime.now(timezone.utc)
+        unreported = unreported - timedelta(hours=app.config['UNRESPONSIVE_HOURS'])
+        unreported = unreported.replace(microsecond=0).isoformat()
+        return f'report_timestamp is null or report_timestamp <= "{unreported}"'
+    if status in ['failed', 'changed', 'noop', 'unchanged']:
+        return f'latest_report_status = "{status}"'
+    return ''
+
+def compose_pql_pagination(page, status, app, orderby='certname asc'):
+    # only paginate if we are not filtering by status,
+    # puppetdb applies pagination before applying filtering conditions
+    if status == '':
+        offset = int(app.config['NODE_QRY_OFFSET']) * int(page)
+        lim = app.config['NODE_QRY_OFFSET']
+        return f'order by {orderby} limit {lim} offset {offset}'
+    return ''

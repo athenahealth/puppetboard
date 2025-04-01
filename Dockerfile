@@ -27,4 +27,4 @@ COPY Dockerfile /
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-CMD gunicorn -b ${PUPPETBOARD_HOST}:${PUPPETBOARD_PORT} --preload --workers="${PUPPETBOARD_WORKERS:-3}" --timeout=90 --worker-class=gevent -e SCRIPT_NAME="${PUPPETBOARD_URL_PREFIX:-}" --access-logfile=- puppetboard.app:app
+CMD gunicorn -b ${PUPPETBOARD_HOST}:${PUPPETBOARD_PORT} --preload --workers="${PUPPETBOARD_WORKERS:-3}" --timeout=120 --worker-class=gevent -e SCRIPT_NAME="${PUPPETBOARD_URL_PREFIX:-}" --access-logfile=- puppetboard.app:app
