@@ -17,8 +17,8 @@ puppetdb = get_puppetdb()
 
 @app.route('/nodes_paged', defaults={'env': app.config['DEFAULT_ENVIRONMENT'], 'page': 0})
 @app.route('/<env>/nodes_paged', defaults={'page': 0})
-@app.route('/<env>/nodes_paged/<int(min=0):page>')
-def nodes_paged(env, page):
+@app.route('/<env>/nodes_paged/<int:page>')
+def nodes_paged(env, page=0):
     envs = environments()
     status_arg = request.args.get('status', '')
     check_env(env, envs)
