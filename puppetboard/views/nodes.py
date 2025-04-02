@@ -44,19 +44,20 @@ def nodes_paged(env, page=0):
         request_method='GET',
     )
     for raw_node in nodelist:
-        nd = Node.create_from_dict(
-            query_api=puppetdb,
-            node=raw_node,
-            with_status=True,
-            with_event_numbers=False,
-            latest_events=False,
-            now=datetime.now(),
-            unreported=app.config['UNRESPONSIVE_HOURS'],
-        )
         # keep everything if there a status filter hasn't been selected,
         # keep only status matches if a status filter has been selected
-        if not status_arg or (status_arg and nd.status == status_arg):
-            nodes.append(nd)
+        if not status_arg or (
+            status_arg and raw_node['latest_report_status'] == status_arg
+        ):
+            nodes.append(Node.create_from_dict(
+                query_api=puppetdb,
+                node=raw_node,
+                with_status=True,
+                with_event_numbers=False,
+                latest_events=False,
+                now=datetime.now(),
+                unreported=app.config['UNRESPONSIVE_HOURS'],
+            ))
 
     # TODO: delete pages_total, current_page, query, only used for debugging
     #       delete matching <ul> items in the template
@@ -67,10 +68,10 @@ def nodes_paged(env, page=0):
         current_env=env,
         pages=pages_total,
         current_page=page,
-        first_page_url=app.url_for('.nodes_paged', env=env, page=0),
-        prev_page_url=app.url_for('.nodes_paged', env=env, page=int(page)-1),
-        next_page_url=app.url_for('.nodes_paged', env=env, page=int(page)+1),
-        last_page_url=app.url_for('.nodes_paged', env=env, page=int(pages_total)),
+        first_page_url=app.url_for('nodes_paged', env=env, page=0),
+        prev_page_url=app.url_for('nodes_paged', env=env, page=int(page)-1),
+        next_page_url=app.url_for('nodes_paged', env=env, page=int(page)+1),
+        last_page_url=app.url_for('nodes_paged', env=env, page=int(pages_total)),
         query=str(qry),
     )
 
