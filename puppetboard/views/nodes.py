@@ -33,12 +33,14 @@ def nodes(env):
     status_arg = request.args.get('status', '')
     check_env(env, envs)
 
+    pdb_url = f'{puppetdb.base_url}/pdb/query/v4'
+
     nodes_n_qry = {
         'query': f'nodes[count()] {{ catalog_environment = "{env}" }}'
     }
 
     nodes_n_json = puppetdb._make_request(
-        url='http://puppetdb-read.service.athenaprod-nva1-dc.consul:8080/pdb/query/v4',
+        url=pdb_url,
         payload=nodes_n_qry,
         request_method='GET',
     )
@@ -75,7 +77,7 @@ def nodes(env):
         nodes_qry['query'] = f'{nodes_qry['query']} {{ {nodes_qry_fragment} order by certname asc limit {lim} offset {offset_idx} }}'
 
         nodelist = puppetdb._make_request(
-            url='http://puppetdb-read.service.athenaprod-nva1-dc.consul:8080/pdb/query/v4',
+            url=pdb_url,
             payload=nodes_qry,
             request_method='GET',
         )

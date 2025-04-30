@@ -51,6 +51,7 @@ def coerce_bool(v, default):
         return False
     return default
 
+APPLICATION_ROOT = os.getenv('PUPPETBOARD_URL_PREFIX','/')
 
 gevent_monkeypatch()
 
