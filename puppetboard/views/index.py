@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import render_template
 from pypuppetdb.types import Node
 from puppetboard.core import get_app, get_puppetdb, environments
-from puppetboard.utils import compose_pql_env, compose_pql_status, check_env, query_node_env_count, query_node_count, query_resource_count, query_resource_env_count, query_status_counts
+from puppetboard.utils import compose_pql_env, compose_pql_status, check_env, query_node_count_env, query_node_count_all, query_resource_count, query_resource_env_count, query_status_env_counts
 
 app = get_app()
 puppetdb = get_puppetdb()
@@ -37,7 +37,7 @@ def index(env):
         # metrics['num_nodes'] = num_nodes['Value']
         # metrics['num_resources'] = num_resources['Value']
 
-        metrics['num_nodes'] = query_node_count(client=puppetdb)
+        metrics['num_nodes'] = query_node_count_all(client=puppetdb)
         metrics['num_resources'] = query_resource_count(client=puppetdb)
         try:
             # Compute our own average because avg_resources_node['Value']
@@ -67,7 +67,7 @@ def index(env):
         #     'nodes',
         #     query=num_nodes_query)
 
-        metrics['num_nodes'] = query_node_env_count(env=env, client=puppetdb)
+        metrics['num_nodes'] = query_node_count_env(env=env, client=puppetdb)
         metrics['num_resources'] = query_resource_env_count(env=env, client=puppetdb)
         # num_resources = get_or_abort(
         #     puppetdb._query,
@@ -79,7 +79,7 @@ def index(env):
         except ZeroDivisionError:
             metrics['avg_resources_node'] = 0
 
-    status_counts = query_status_counts(env=env, client=puppetdb)
+    status_counts = query_status_env_counts(env=env, client=puppetdb)
 
     # nodes = get_or_abort(puppetdb.nodes,
     #                      query=query,

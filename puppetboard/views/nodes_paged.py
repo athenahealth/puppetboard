@@ -7,7 +7,7 @@ from puppetboard.core import (environments, get_app,
                               get_puppetdb)
 from puppetboard.utils import (calc_batches, check_env, compose_pql_env,
                                compose_pql_pagination, compose_pql_status,
-                               query_node_env_count)
+                               query_node_count_env)
 
 
 app = get_app()
@@ -23,7 +23,7 @@ def nodes_paged(env):
     check_env(env, envs)
 
     pdb_url = f'{puppetdb.base_url}/pdb/query/v4'
-    nodes_n = query_node_env_count(env=env, client=puppetdb)
+    nodes_n = query_node_count_env(env=env, client=puppetdb)
     pages_total = calc_batches(nodes_n, app=app)
 
     nodes_qry_acc = []
@@ -58,6 +58,11 @@ def nodes_paged(env):
                 unreported=app.config['UNRESPONSIVE_HOURS'],
             ))
 
+    def get_pg_url(page, env, status):
+        if status:
+            return page
+        return app.url_for('nodes_paged', env=env, page=page)
+
     # TODO: delete pages_total, current_page, query, only used for debugging
     #       delete matching <ul> items in the template
     return render_template(
@@ -67,9 +72,9 @@ def nodes_paged(env):
         current_env=env,
         pages=pages_total,
         current_page=page_arg,
-        first_page_url=app.url_for('nodes_paged', env=env, page=0),
-        prev_page_url=app.url_for('nodes_paged', env=env, page=page_arg-1),
-        next_page_url=app.url_for('nodes_paged', env=env, page=page_arg+1),
-        last_page_url=app.url_for('nodes_paged', env=env, page=int(pages_total)),
+        first_page_url=get_pg_url(0, env, status_arg),
+        prev_page_url=get_pg_url(page_arg-1, env, status_arg),
+        next_page_url=get_pg_url(page_arg+1, env, status_arg),
+        last_page_url=get_pg_url(pages_total, env, status_arg),
         query=str(qry),
     )

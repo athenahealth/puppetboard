@@ -163,9 +163,9 @@ def is_a_test():
     running_in_intellij = any("_jb_pytest_runner.py" in arg for arg in sys.argv)
     return running_in_shell or running_in_intellij
 
-def query_node_count(client):
+def query_node_count_all(client):
     nodes_n_qry = {
-        'query': f'nodes[count()]'
+        'query': f'nodes[count()] {{}}'
     }
     nodes_n_json = client._make_request(
         url=f'{client.base_url}/pdb/query/v4',
@@ -175,7 +175,7 @@ def query_node_count(client):
     [nodes_n] = nodes_n_json if nodes_n_json is not None else [{'count': 0}]
     return nodes_n['count']
 
-def query_node_env_count(env, client):
+def query_node_count_env(env, client):
     nodes_n_qry = {
         'query': f'nodes[count()] {{report_environment = "{env}"}}'
     }
@@ -187,7 +187,7 @@ def query_node_env_count(env, client):
     [nodes_n] = nodes_n_json if nodes_n_json is not None else [{'count': 0}]
     return nodes_n['count']
 
-def query_node_status_count(env, status, client):
+def query_node_status_count_env(env, status, client):
     nodes_n_qry = {
         'query': f'nodes[count()] {{report_environment = "{env}" and latest_report_status = "{status}"}}'
     }
@@ -199,9 +199,21 @@ def query_node_status_count(env, status, client):
     [nodes_n] = nodes_n_json if nodes_n_json is not None else [{'count': 0}]
     return nodes_n['count']
 
+def query_node_status_count_all(status, client):
+    nodes_n_qry = {
+        'query': f'nodes[count()] {{latest_report_status = "{status}"}}'
+    }
+    nodes_n_json = client._make_request(
+        url=f'{client.base_url}/pdb/query/v4',
+        payload=nodes_n_qry,
+        request_method='GET',
+    )
+    [nodes_n] = nodes_n_json if nodes_n_json is not None else [{'count': 0}]
+    return nodes_n['count']
+
 def query_resource_count(client):
     resources_n_qry = {
-        'query': f'resources[count()]'
+        'query': f'resources[count()] {{}}'
     }
     resources_n_json = client._make_request(
         url=f'{client.base_url}/pdb/query/v4',
@@ -223,7 +235,18 @@ def query_resource_env_count(env, client):
     [resources_n] = resources_n_json if resources_n_json is not None else [{'count': 0}]
     return resources_n['count']
 
-def query_status_counts(env, client):
+def query_status_counts(client):
+    status_n_qry = {
+        'query': f'nodes[latest_report_status,count()] {{ group by latest_report_status }}'
+    }
+    status_n_json = client._make_request(
+        url=f'{client.base_url}/pdb/query/v4',
+        payload=status_n_qry,
+        request_method='GET',
+    )
+    return {stat['latest_report_status']: int(stat['count']) for stat in status_n_json}
+
+def query_status_env_counts(env, client):
     status_n_qry = {
         'query': f'nodes[latest_report_status,count()] {{ catalog_environment = "{env}" group by latest_report_status }}'
     }

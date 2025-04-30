@@ -2,50 +2,58 @@
 {% import '_macros.html' as macros %}
 {% block content %}
 <div class="ui grid">
-  <div class="two wide column">
-    <div class="ui fluid icon dropdown large basic button">
-      <input name="status" type="hidden" value="Failed">
-      <i class="filter icon"></i>
-      <span class="text">Filter By Status</span>
-      <i class="dropdown icon"></i>
-      <div class="menu">
-        <a class="item" href="{{url_for_field('status', 'failed')}}">Failed</a>
-        <a class="item" href="{{url_for_field('status', 'changed')}}">Changed</a>
-        <a class="item" href="{{url_for_field('status', 'unchanged')}}">Unchanged</a>
-        <a class="item" href="{{url_for_field('status', 'noop')}}">Noop</a>
-        <a class="item" href="{{url_for_field('status', 'unreported')}}">Unreported</a>
+  <div class="ui fluid center segment">
+    <ul>
+      <li>Current page / total pages: {{current_page}} / {{pages}}</li>
+      <li>First page URL: {{first_page_url}}</li>
+      <li>Next page URL: {{next_page_url}}</li>
+      <li>Previous page URL: {{prev_page_url}}</li>
+      <li>Last page URL: {{last_page_url}}</li>
+      <li>
+        <span>
+          Current query:
+          {{query}}
+        </span>
+      </li>
+    </ul>
+  </div>
+  <div class="ui fluid container">
+    <div class="ui compact attached menu">
+      <div class="ui left container">
+        {% if current_page > 0 %}
+        <div class="ui buttons">
+          <a class="ui item labeled icon button" href="{{first_page_url}}"><i class="angle double left icon"></i>First</a>
+          <a class="ui item button" href="{{prev_page_url}}"><i class="angle left icon"></i>Back</a>
+        </div>
+        {% endif %}
+        {% if current_page+1 <= pages %}
+        <div class="ui buttons">
+          <a class="ui item button" href="{{next_page_url}}">Next<i class="angle right icon"></i></a>
+          <a class="ui item right labeled icon button" href="{{last_page_url}}">Last<i class="angle double right icon"></i></a>
+        </div>
+        {% endif %}
+      </div>
+      <div class="ui right container">
+        <div class="ui fluid icon dropdown large basic button item">
+          <input name="status" type="hidden" value="Failed">
+          <i class="filter icon"></i>
+          <span class="text">Filter By Status
+            <div class="ui icon button" data-tooltip="Filtering by status will retrieve all nodes with a matching status in environment '{{current_env}}'" data-position="top right">
+              <i class="info icon"></i>
+            </div>
+          </span>
+          <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="{{url_for_field('status', 'failed')}}">Failed</a>
+            <a class="item" href="{{url_for_field('status', 'changed')}}">Changed</a>
+            <a class="item" href="{{url_for_field('status', 'unchanged')}}">Unchanged</a>
+            <a class="item" href="{{url_for_field('status', 'noop')}}">Noop</a>
+            <a class="item" href="{{url_for_field('status', 'unreported')}}">Unreported</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<div class="ui right floated segment">
-  {% if current_page > 0 %}
-  <div class="ui buttons">
-    <a class="ui labeled icon button" href="{{first_page_url}}"><i class="angle double left icon"></i>First</a>
-    <a class="ui button" href="{{prev_page_url}}"><i class="angle left icon"></i>Back</a>
-  </div>
-  {% endif %}
-  {% if current_page+1 <= pages %}
-  <div class="ui buttons">
-    <a class="ui button" href="{{next_page_url}}"><i class="angle right icon"></i>Next</a>
-    <a class="ui labeled icon button" href="{{last_page_url}}"><i class="angle double right icon"></i>Last</a>
-  </div>
-  {% endif %}
-</div>
-<div>
-  <ul>
-    <li>Current page / total pages: {{current_page}} / {{pages}}</li>
-    <li>First page URL: {{first_page_url}}</li>
-    <li>Next page URL: {{next_page_url}}</li>
-    <li>Previous page URL: {{prev_page_url}}</li>
-    <li>Last page URL: {{last_page_url}}</li>
-    <li>
-      <span>
-        Current query:
-        {{query}}
-      </span>
-    </li>
-  </ul>
 </div>
 <table
   id="main-table"

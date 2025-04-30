@@ -1,13 +1,13 @@
 import secrets
 
-PUPPETDB_HOST = 'puppetdb-read.service.athenaprod-nva1-dc.consul'
+PUPPETDB_HOST = 'puppetdb-read.service.athenaprod-nva1-dc.consul'   #TODO:update
 PUPPETDB_PORT = 8080
 PUPPETDB_PROTO = None
 PUPPETDB_SSL_VERIFY = True
 PUPPETDB_KEY = None
 PUPPETDB_CERT = None
 PUPPETDB_TIMEOUT = 20
-DEFAULT_ENVIRONMENT = 'nop4dev'
+DEFAULT_ENVIRONMENT = 'nop4dev'                                     #TODO:update
 # this empty string has to be changed, we validate it with check_secret_key()
 SECRET_KEY = ''  # nosec
 UNRESPONSIVE_HOURS = 1
@@ -63,6 +63,7 @@ WITH_EVENT_NUMBERS = True
 SHOW_ERROR_AS = 'friendly'  # or 'raw'
 CODE_PREFIX_TO_REMOVE = '/etc/puppetlabs/code/environments(/.*?/modules)?'
 FAVORITE_ENVS = [
+    'nop4dev',                                                      #TODO:update
     'production',
     'staging',
     'qa',

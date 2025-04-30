@@ -1,14 +1,16 @@
 import gevent.monkey
 
+
 def gevent_monkeypatch():
     gevent.monkey.patch_all()
 
+import base64
+import binascii
 import json
 import os
 import secrets
 import tempfile
-import base64
-import binascii
+
 
 def cert_to_file(cert_file_or_string):
     """
@@ -53,7 +55,7 @@ def coerce_bool(v, default):
 gevent_monkeypatch()
 
 # PUPPETDB_HOST = os.getenv('PUPPETDB_HOST', 'puppetdb')
-PUPPETDB_HOST = "puppetdb-read.service.athenaprod-nva1-dc.consul"
+PUPPETDB_HOST = "puppetdb-read.service.athenaprod-nva1-dc.consul"                   #TODO:update
 PUPPETDB_PORT = int(os.getenv('PUPPETDB_PORT', '8080'))
 # This may be a bool in string - that's what coerce_bool is for
 # but if it is other string, then it's a path
@@ -66,7 +68,7 @@ PUPPETDB_KEY = cert_to_file(os.getenv('PUPPETDB_KEY', None))
 PUPPETDB_CERT = cert_to_file(os.getenv('PUPPETDB_CERT', None))
 PUPPETDB_PROTO = os.getenv('PUPPETDB_PROTO', None)
 PUPPETDB_TIMEOUT = int(os.getenv('PUPPETDB_TIMEOUT', '120'))
-DEFAULT_ENVIRONMENT = os.getenv('DEFAULT_ENVIRONMENT', 'nop4dev')
+DEFAULT_ENVIRONMENT = os.getenv('DEFAULT_ENVIRONMENT', 'nop4dev')                   #TODO:update
 # this empty string has to be changed, we validate it with check_secret_key()
 SECRET_KEY = os.getenv('SECRET_KEY', '')  # nosec
 UNRESPONSIVE_HOURS = int(os.getenv('UNRESPONSIVE_HOURS', '1'))
@@ -154,6 +156,7 @@ WITH_EVENT_NUMBERS = coerce_bool(os.getenv('WITH_EVENT_NUMBERS'), True)
 SHOW_ERROR_AS = os.getenv('SHOW_ERROR_AS', 'friendly')
 CODE_PREFIX_TO_REMOVE = os.getenv('CODE_PREFIX_TO_REMOVE', '/etc/puppetlabs/code/environments')
 FAVORITE_ENVS_DEF = ','.join([
+    'nop4dev',
     'production',
     'staging',
     'qa',
