@@ -1,0 +1,110 @@
+{% extends 'layout.html' %}
+{% import '_macros.html' as macros %}
+{% block content %}
+<div class="ui grid">
+  <div class="ui fluid center segment">
+    <ul>
+      <li>Current page / total pages: {{current_page}} / {{pages}}</li>
+      <li>First page URL: {{first_page_url}}</li>
+      <li>Next page URL: {{next_page_url}}</li>
+      <li>Previous page URL: {{prev_page_url}}</li>
+      <li>Last page URL: {{last_page_url}}</li>
+      <li>
+        <span>
+          Current query:
+          {{query}}
+        </span>
+      </li>
+    </ul>
+  </div>
+  <div class="ui fluid container">
+    <div class="ui compact attached menu">
+      <div class="ui left container">
+        {% if current_page > 0 %}
+        <div class="ui buttons">
+          <a class="ui item labeled icon button" href="{{first_page_url}}"><i class="angle double left icon"></i>First</a>
+          <a class="ui item button" href="{{prev_page_url}}"><i class="angle left icon"></i>Back</a>
+        </div>
+        {% endif %}
+        {% if current_page+1 <= pages %}
+        <div class="ui buttons">
+          <a class="ui item button" href="{{next_page_url}}">Next<i class="angle right icon"></i></a>
+          <a class="ui item right labeled icon button" href="{{last_page_url}}">Last<i class="angle double right icon"></i></a>
+        </div>
+        {% endif %}
+      </div>
+      <div class="ui right container">
+        <div class="ui fluid icon dropdown large basic button item">
+          <input name="status" type="hidden" value="Failed">
+          <i class="filter icon"></i>
+          <span class="text">Filter By Status
+            <div class="ui icon button" data-tooltip="Filtering by status will retrieve all nodes with a matching status in environment '{{current_env}}'" data-position="top right">
+              <i class="info icon"></i>
+            </div>
+          </span>
+          <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="{{url_for_field('status', 'failed')}}">Failed</a>
+            <a class="item" href="{{url_for_field('status', 'changed')}}">Changed</a>
+            <a class="item" href="{{url_for_field('status', 'unchanged')}}">Unchanged</a>
+            <a class="item" href="{{url_for_field('status', 'noop')}}">Noop</a>
+            <a class="item" href="{{url_for_field('status', 'unreported')}}">Unreported</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<table
+  id="main-table"
+  class='ui very basic very compact table'
+  data-auto-width="false"
+  data-paging="false"
+  data-info="false"
+  data-dom="t"
+  data-order='[[ 2, "asc" ]]'
+>
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Certname</th>
+      <th>Catalog</th>
+      <th>Report</th>
+      <th class="collapsing" data-orderable="false"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for node in nodes %}
+    <tr>
+      <td data-order="{{ node.name }}">
+        {% if node.latest_report_hash %}
+          {{macros.status_counts(status=node.status, node_name=node.name, events=node.events, unreported_time=node.unreported_time, current_env=current_env, report_hash=node.latest_report_hash)}}
+        {% else %}
+          {{macros.status_counts(status=node.status, node_name=node.name, events=node.events, unreported_time=node.unreported_time, current_env=current_env)}}
+        {% endif %}
+      </td>
+      <td><a href="{{url_for('node', env=current_env, node_name=node.name)}}">{{node.name}}</a></td>
+      <td data-order="{{ node.name | default('', true) }}">
+        {% if node.catalog_timestamp %}
+          <a href="{{url_for('catalog_node', env=current_env, node_name=node.name)}}" data-localise="{{ config.LOCALISE_TIMESTAMP|lower }}">{{node.catalog_timestamp}}</a>
+        {% else %}
+          <i class="large darkblue ban icon"></i>
+        {% endif %}
+      </td>
+      <td data-order="{{ node.name | default('', true) }}">
+        {% if node.report_timestamp %}
+          <a href="{{url_for('report', env=current_env, node_name=node.name, report_id=node.latest_report_hash)}}"  data-localise="{{ config.LOCALISE_TIMESTAMP|lower }}">{{ node.report_timestamp }}</a>
+        {% else %}
+          <i class="large darkblue ban icon"></i>
+        {% endif %}
+      </td>
+      <td>
+        {% if node.report_timestamp %}
+        <a title='Reports' href="{{url_for('reports', env=current_env, node_name=node.name)}}"><i class='large darkblue book icon'></i></a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock content %}

@@ -1,9 +1,15 @@
+import gevent.monkey
+
+
+def gevent_monkeypatch():
+    gevent.monkey.patch_all()
+
+import base64
+import binascii
 import json
 import os
 import secrets
 import tempfile
-import base64
-import binascii
 
 
 def cert_to_file(cert_file_or_string):
@@ -47,7 +53,10 @@ def coerce_bool(v, default):
 
 APPLICATION_ROOT = os.getenv('PUPPETBOARD_URL_PREFIX','/')
 
-PUPPETDB_HOST = os.getenv('PUPPETDB_HOST', 'puppetdb')
+gevent_monkeypatch()
+
+# PUPPETDB_HOST = os.getenv('PUPPETDB_HOST', 'puppetdb')
+PUPPETDB_HOST = "puppetdb-read.service.athenaprod-nva1-dc.consul"                   #TODO:update
 PUPPETDB_PORT = int(os.getenv('PUPPETDB_PORT', '8080'))
 # This may be a bool in string - that's what coerce_bool is for
 # but if it is other string, then it's a path
@@ -59,11 +68,11 @@ PUPPETDB_SSL_VERIFY = coerce_bool(
 PUPPETDB_KEY = cert_to_file(os.getenv('PUPPETDB_KEY', None))
 PUPPETDB_CERT = cert_to_file(os.getenv('PUPPETDB_CERT', None))
 PUPPETDB_PROTO = os.getenv('PUPPETDB_PROTO', None)
-PUPPETDB_TIMEOUT = int(os.getenv('PUPPETDB_TIMEOUT', '20'))
-DEFAULT_ENVIRONMENT = os.getenv('DEFAULT_ENVIRONMENT', 'production')
+PUPPETDB_TIMEOUT = int(os.getenv('PUPPETDB_TIMEOUT', '120'))
+DEFAULT_ENVIRONMENT = os.getenv('DEFAULT_ENVIRONMENT', 'nop4dev')                   #TODO:update
 # this empty string has to be changed, we validate it with check_secret_key()
 SECRET_KEY = os.getenv('SECRET_KEY', '')  # nosec
-UNRESPONSIVE_HOURS = int(os.getenv('UNRESPONSIVE_HOURS', '2'))
+UNRESPONSIVE_HOURS = int(os.getenv('UNRESPONSIVE_HOURS', '1'))
 ENABLE_QUERY = coerce_bool(os.getenv('ENABLE_QUERY'), True)
 # Uncomment to restrict the enabled PuppetDB endpoints in the query page.
 # ENABLED_QUERY_ENDPOINTS = ['facts', 'nodes']
@@ -85,7 +94,7 @@ DISPLAYED_METRICS = [x.strip() for x in os.getenv('DISPLAYED_METRICS',
                                                   DISP_METR_DEF).split(',')]
 
 OFFLINE_MODE = coerce_bool(os.getenv('OFFLINE_MODE'), False)
-ENABLE_CATALOG = coerce_bool(os.getenv('ENABLE_CATALOG'), False)
+ENABLE_CATALOG = coerce_bool(os.getenv('ENABLE_CATALOG'), True)
 OVERVIEW_FILTER = os.getenv('OVERVIEW_FILTER', None)
 PAGE_TITLE = os.getenv('PAGE_TITLE', 'Puppetboard')
 
@@ -137,9 +146,10 @@ if INV_TPL_STR:
 INVENTORY_FACTS = [(INV_STR[i].strip(),
                     INV_STR[i + 1].strip()) for i in range(0, len(INV_STR), 2)]
 
-REFRESH_RATE = int(os.getenv('REFRESH_RATE', '30'))
+REFRESH_RATE = int(os.getenv('REFRESH_RATE', '480'))
 
-DAILY_REPORTS_CHART_ENABLED = coerce_bool(os.getenv('DAILY_REPORTS_CHART_ENABLED'), True)
+# DAILY_REPORTS_CHART_ENABLED = coerce_bool(os.getenv('DAILY_REPORTS_CHART_ENABLED'), True)
+DAILY_REPORTS_CHART_ENABLED = False
 DAILY_REPORTS_CHART_DAYS = int(os.getenv('DAILY_REPORTS_CHART_DAYS', '8'))
 
 WITH_EVENT_NUMBERS = coerce_bool(os.getenv('WITH_EVENT_NUMBERS'), True)
@@ -147,6 +157,7 @@ WITH_EVENT_NUMBERS = coerce_bool(os.getenv('WITH_EVENT_NUMBERS'), True)
 SHOW_ERROR_AS = os.getenv('SHOW_ERROR_AS', 'friendly')
 CODE_PREFIX_TO_REMOVE = os.getenv('CODE_PREFIX_TO_REMOVE', '/etc/puppetlabs/code/environments')
 FAVORITE_ENVS_DEF = ','.join([
+    'nop4dev',
     'production',
     'staging',
     'qa',

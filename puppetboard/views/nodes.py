@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from itertools import batched
 
-from flask import (
-    Response, stream_with_context, request, render_template
-)
-from pypuppetdb.QueryBuilder import (AndOperator,
-                                     EqualsOperator, NullOperator, OrOperator,
-                                     LessEqualOperator)
+from flask import Response, render_template, request, stream_with_context
+from pypuppetdb.QueryBuilder import AndOperator, EqualsOperator
+from pypuppetdb.types import Node
 
-from puppetboard.core import get_app, get_puppetdb, environments, stream_template, REPORTS_COLUMNS
-from puppetboard.utils import (yield_or_stop, check_env, get_or_abort)
+from puppetboard.core import (REPORTS_COLUMNS, environments, get_app,
+                              get_puppetdb, stream_template)
+from puppetboard.utils import (check_env, get_or_abort)
+
 
 app = get_app()
 puppetdb = get_puppetdb()
@@ -33,40 +33,69 @@ def nodes(env):
     status_arg = request.args.get('status', '')
     check_env(env, envs)
 
-    query = AndOperator()
+    pdb_url = f'{puppetdb.base_url}/pdb/query/v4'
 
-    if env != '*':
-        query.add(EqualsOperator("catalog_environment", env))
+    nodes_n_qry = {
+        'query': f'nodes[count()] {{ catalog_environment = "{env}" }}'
+    }
 
-    if status_arg in ['failed', 'changed', 'unchanged']:
-        query.add(EqualsOperator('latest_report_status', status_arg))
-    elif status_arg == 'unreported':
-        unreported = datetime.now()
-        unreported = (unreported -
-                      timedelta(hours=app.config['UNRESPONSIVE_HOURS']))
-        unreported = unreported.replace(microsecond=0).isoformat()
+    nodes_n_json = puppetdb._make_request(
+        url=pdb_url,
+        payload=nodes_n_qry,
+        request_method='GET',
+    )
 
-        unrep_query = OrOperator()
-        unrep_query.add(NullOperator('report_timestamp', True))
-        unrep_query.add(LessEqualOperator('report_timestamp', unreported))
+    [nodes_n] = nodes_n_json if nodes_n_json is not None else [{'count': 0}]
+    nodes_n = nodes_n['count']
 
-        query.add(unrep_query)
-
-    if len(query.operations) == 0:
-        query = None
-
-    nodelist = puppetdb.nodes(
-        query=query,
-        unreported=app.config['UNRESPONSIVE_HOURS'],
-        with_status=True,
-        with_event_numbers=app.config['WITH_EVENT_NUMBERS'])
     nodes = []
-    for node in yield_or_stop(nodelist):
-        if status_arg:
-            if node.status == status_arg:
+    lim = app.config['NODE_QRY_LIMIT']
+    offset = app.config['NODE_QRY_OFFSET']
+
+    for page in batched(range(nodes_n), offset):
+        offset_idx = page[-1]
+        nodes_qry = {'query': 'nodes'}
+        nodes_qry_acc = []
+
+        if env != '*':
+            nodes_qry_acc.append(f'catalog_environment = "{env}"')
+
+        if status_arg in ['failed', 'changed', 'unchanged']:
+            nodes_qry_acc.append(f'latest_report_status = "{status_arg}"')
+        elif status_arg == 'unreported':
+            unreported = datetime.now(timezone.utc)
+            unreported = (unreported -
+                        timedelta(hours=app.config['UNRESPONSIVE_HOURS']))
+            unreported = unreported.replace(microsecond=0).isoformat()
+
+            nodes_qry_acc.append(f'report_timestamp is null or report_timestamp <= "{unreported}"')
+
+        nodes_qry_fragment = ''
+        if len(nodes_qry_acc) > 1:
+            nodes_qry_fragment += " and ".join(nodes_qry_acc)
+
+        nodes_qry['query'] = f'{nodes_qry['query']} {{ {nodes_qry_fragment} order by certname asc limit {lim} offset {offset_idx} }}'
+
+        nodelist = puppetdb._make_request(
+            url=pdb_url,
+            payload=nodes_qry,
+            request_method='GET',
+        )
+        for node_raw in nodelist:
+            node = Node.create_from_dict(
+                query_api=puppetdb,
+                node=node_raw,
+                with_status=True,
+                with_event_numbers=False,
+                latest_events=False,
+                now=datetime.now(),
+                unreported=app.config['UNRESPONSIVE_HOURS'],
+            )
+            if status_arg and node.status == status_arg:
+                    nodes.append(node)
+            if not status_arg:
                 nodes.append(node)
-        else:
-            nodes.append(node)
+
     return Response(stream_with_context(
         stream_template('nodes.html',
                         nodes=nodes,
@@ -100,4 +129,5 @@ def node(env, node_name):
         node=node,
         envs=envs,
         current_env=env,
-        columns=REPORTS_COLUMNS[:2])
+        columns=REPORTS_COLUMNS[:2],
+    )

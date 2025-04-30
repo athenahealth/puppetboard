@@ -1,16 +1,16 @@
 import secrets
 
-PUPPETDB_HOST = 'localhost'
+PUPPETDB_HOST = 'puppetdb-read.service.athenaprod-nva1-dc.consul'   #TODO:update
 PUPPETDB_PORT = 8080
 PUPPETDB_PROTO = None
 PUPPETDB_SSL_VERIFY = True
 PUPPETDB_KEY = None
 PUPPETDB_CERT = None
 PUPPETDB_TIMEOUT = 20
-DEFAULT_ENVIRONMENT = 'production'
+DEFAULT_ENVIRONMENT = 'nop4dev'                                     #TODO:update
 # this empty string has to be changed, we validate it with check_secret_key()
 SECRET_KEY = ''  # nosec
-UNRESPONSIVE_HOURS = 2
+UNRESPONSIVE_HOURS = 1
 ENABLE_QUERY = True
 # Uncomment to restrict the enabled PuppetDB endpoints in the query page.
 # ENABLED_QUERY_ENDPOINTS = ['facts', 'nodes']
@@ -57,12 +57,13 @@ INVENTORY_FACT_TEMPLATES = {
     'os': "{{ fact_os_detection(value) }}",
 }
 REFRESH_RATE = 30
-DAILY_REPORTS_CHART_ENABLED = True
+DAILY_REPORTS_CHART_ENABLED = False
 DAILY_REPORTS_CHART_DAYS = 8
 WITH_EVENT_NUMBERS = True
 SHOW_ERROR_AS = 'friendly'  # or 'raw'
 CODE_PREFIX_TO_REMOVE = '/etc/puppetlabs/code/environments(/.*?/modules)?'
 FAVORITE_ENVS = [
+    'nop4dev',                                                      #TODO:update
     'production',
     'staging',
     'qa',
@@ -98,3 +99,7 @@ SCHEDULER_JOBS = [{
 }]
 SCHEDULER_ENABLED = False
 SCHEDULER_LOCK_BIND_PORT = 49100
+
+# default query pagination settings
+NODE_QRY_OFFSET = 100
+NODE_QRY_LIMIT = 100

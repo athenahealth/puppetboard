@@ -26,6 +26,8 @@ import puppetboard.views.metrics  # noqa: F401
 # noinspection PyUnresolvedReferences
 import puppetboard.views.nodes  # noqa: F401
 # noinspection PyUnresolvedReferences
+import puppetboard.views.nodes_paged  # noqa: F401
+# noinspection PyUnresolvedReferences
 import puppetboard.views.query  # noqa: F401
 # noinspection PyUnresolvedReferences
 import puppetboard.views.radiator  # noqa: F401
@@ -54,6 +56,7 @@ menu_entries = [
     ('index', 'Overview'),
     ('failures', 'Failures'),
     ('nodes', 'Nodes'),
+    ('nodes_paged', 'Nodes (paginated)'),
     ('facts', 'Facts'),
     ('reports', 'Reports'),
     ('metrics', 'Metrics'),
